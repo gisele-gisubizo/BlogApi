@@ -1,0 +1,1 @@
+{"version":3,"file":"builtinModuless.js","sourceRoot":"","sources":["../src/builtinModuless.ts"],"names":[],"mappings":";;;;;AAAA,gDAAwB;AACxB,4DAAkC;AAGlC,OAAO,CAAC,GAAG,CAAC,eAAe,EAAC,cAAI,CAAC,QAAQ,CAAC,UAAU,CAAC,CAAC,CAAA;AACtD,OAAO,CAAC,GAAG,CAAC,YAAY,EAAC,cAAI,CAAC,QAAQ,CAAC,SAAS,CAAC,CAAC,CAAA;AAClD,OAAO,CAAC,GAAG,CAAC,IAAA,mBAAQ,EAAC,MAAM,CAAC,CAAC,CAAC"}
