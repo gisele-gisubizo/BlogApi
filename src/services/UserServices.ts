@@ -1,4 +1,4 @@
-import { UserRepository } from "../repository/UserRepository";
+import { UserRepository } from "../Repositories/userRepository"; // To be removed later
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../entities/User";
@@ -38,10 +38,11 @@ export class UserService {
       throw { status: 401, message: "Invalid credentials" };
     }
 
-    if (!process.env.JWT_SECRET) {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
       throw { status: 500, message: "JWT secret not configured" };
     }
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: "1h" });
     return { token };
   }
 
@@ -65,15 +66,15 @@ export class UserService {
       throw { status: 404, message: "User not found" };
     }
 
-    if (!process.env.JWT_SECRET) {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
       throw { status: 500, message: "JWT secret not configured" };
     }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
+    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: "1h" });
+    user.resetPasswordToken = token; // Verified in User entity
+    user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour, verified in User entity
 
-    // Save the updated user to the database
     try {
       await UserRepository.save(user);
       console.log("Reset token saved for user:", { email, resetPasswordToken: user.resetPasswordToken });
@@ -83,7 +84,6 @@ export class UserService {
     }
 
     await this.emailService.sendResetPasswordEmail(user.email, token);
-
     return { message: "Password reset email sent" };
   }
 
@@ -93,16 +93,20 @@ export class UserService {
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: number };
-      const user = await UserRepository.findByResetToken(token); // Use custom method
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        throw { status: 500, message: "JWT secret not configured" };
+      }
+      const decoded = jwt.verify(token, jwtSecret) as { userId: number };
+      const user = await UserRepository.findByResetToken(token);
 
       if (!user) {
         throw { status: 400, message: "Invalid or expired token" };
       }
 
       user.password = await bcrypt.hash(newPassword, 10);
-      user.resetPasswordToken = null;
-      user.resetPasswordExpires = null;
+      user.resetPasswordToken = null; // Verified in User entity
+      user.resetPasswordExpires = null; // Verified in User entity
       await UserRepository.save(user);
 
       return { message: "Password reset successfully" };

@@ -1,4 +1,4 @@
-import { PostRepository } from "../repository/PostRepository";
+import { PostRepository } from "../Repositories/PostRepository";
 import { User } from "../entities/User";
 import { Post } from "../entities/Post";
 

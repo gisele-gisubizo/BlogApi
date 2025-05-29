@@ -57,9 +57,6 @@ router.post("/reset", async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(error.status || 500).json({ message: error.message });
   }
-
-
-
 });
 
 export default router;

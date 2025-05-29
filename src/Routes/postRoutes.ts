@@ -1,4 +1,4 @@
-import { Router ,Request,Response } from "express";
+import { Router , Request, Response } from "express";
 import { PostService } from "../services/PostService";
 import { authMiddleware } from "../middleware/authMiddleware";
 
