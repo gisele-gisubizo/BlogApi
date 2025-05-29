@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
-
 @Entity("users")
 export class User {
   @PrimaryGeneratedColumn()
@@ -14,6 +13,12 @@ export class User {
 
   @Column()
   password!: string;
+
+  @Column({ type: "varchar", nullable: true })
+  resetPasswordToken: string | null = null;
+
+  @Column({ type: "timestamp", nullable: true })
+  resetPasswordExpires: Date | null = null;
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -1,12 +1,14 @@
-//routers define the end point and map the http methods, i mean the get,post,delete  and others as such
-//they are responsible of receiving http requests and directing them to the appropriate logic
-
-import { Router,Request,Response } from "express";
+import { Router, Request, Response } from "express";
 import { UserService } from "../services/UserServices";
 import { authMiddleware } from "../middleware/authMiddleware";
 
 const router = Router();
 const userService = new UserService();
+
+router.get("/test", (req: Request, res: Response) => {
+  console.log("GET /test hit");
+  res.json({ message: "Test" });
+});
 
 router.post("/register", async (req: Request, res: Response) => {
   try {
@@ -37,5 +39,27 @@ router.get("/profile", authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
+router.post("/forgot", async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const result = await userService.forgotPassword(email);
+    res.json(result);
+  } catch (error: any) {
+    res.status(error.status || 500).json({ message: error.message });
+  }
+});
+
+router.post("/reset", async (req: Request, res: Response) => {
+  try {
+    const { token, newPassword } = req.body;
+    const result = await userService.resetPassword(token, newPassword);
+    res.json(result);
+  } catch (error: any) {
+    res.status(error.status || 500).json({ message: error.message });
+  }
+
+
+
+});
 
 export default router;

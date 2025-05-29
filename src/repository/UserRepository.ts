@@ -3,7 +3,7 @@ import { User } from "../entities/User";
 
 export const UserRepository = AppDataSource.getRepository(User).extend({
   async createUser(userData: Partial<User>) {
-    const user = this.create(userData); 
+    const user = this.create(userData);
     return this.save(user);
   },
 
@@ -23,5 +23,12 @@ export const UserRepository = AppDataSource.getRepository(User).extend({
 
   async findByEmail(email: string): Promise<User | null> {
     return this.findOneBy({ email });
+  },
+
+  async findByResetToken(token: string): Promise<User | null> {
+    return this.createQueryBuilder("user")
+      .where("user.resetPasswordToken = :token", { token })
+      .andWhere("user.resetPasswordExpires > :now", { now: new Date() })
+      .getOne();
   },
 });

@@ -13,8 +13,10 @@ export const AppDataSource = new DataSource({
   password: process.env.DATABASE_PASSWORD || "12345",
   database: process.env.DATABASE_NAME || "Users",
   entities: [User, Post],
-  synchronize: true, // Not advisable for production
-  logging: true,
+  synchronize: false,
+  logging: false,
+  migrations: ["src/migration/*.ts"],
+  migrationsTableName: "migrations",
 });
 
 export const InitializeDatabase = async (): Promise<void> => {
@@ -23,6 +25,6 @@ export const InitializeDatabase = async (): Promise<void> => {
     console.log("Database connected successfully");
   } catch (error) {
     console.error("Error connecting to the database", error);
-    process.exit(1); // Exit on failure to ensure server doesn't start without DB
+    process.exit(1);
   }
 };
