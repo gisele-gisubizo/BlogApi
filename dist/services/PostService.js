@@ -10,63 +10,75 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PostService = void 0;
-const PostRepository_1 = require("../repository/PostRepository");
+const database_1 = require("../config/database");
+const Post_1 = require("../entities/Post");
+const errors_1 = require("../utils/errors");
 class PostService {
+    constructor() {
+        this.postRepository = database_1.AppDataSource.getRepository(Post_1.Post);
+    }
     createPost(title, body, author) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!title || !body) {
-                throw { status: 400, message: "Title and body are required" };
+                throw new errors_1.ValidationError("Title and body are required", {});
             }
-            const post = yield PostRepository_1.PostRepository.createPost({ title, body, author });
+            const post = yield this.postRepository.save(this.postRepository.create({ title, body, author }));
             return post;
         });
     }
     getPosts(page, limit) {
         return __awaiter(this, void 0, void 0, function* () {
-            const [posts, total] = yield PostRepository_1.PostRepository.findAll(page, limit);
+            const [posts, total] = yield this.postRepository.findAndCount({
+                take: limit,
+                skip: (page - 1) * limit,
+                relations: ["author"],
+            });
             return { posts, total, page, totalPages: Math.ceil(total / limit) };
         });
     }
     getPostById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const post = yield PostRepository_1.PostRepository.findById(id);
-                return post;
+            const post = yield this.postRepository.findOne({
+                where: { id },
+                relations: ["author"],
+            });
+            if (!post) {
+                throw new errors_1.NotFoundError("Post");
             }
-            catch (error) {
-                throw { status: 404, message: error.message || "Post not found" };
-            }
+            return post;
         });
     }
     updatePost(id, title, body, user) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const post = yield PostRepository_1.PostRepository.findById(id);
-                if (post.author.id !== user.id) {
-                    throw { status: 403, message: "Not authorized to update this post" };
-                }
-                post.title = title || post.title;
-                post.body = body || post.body;
-                return yield PostRepository_1.PostRepository.updatePost(post);
+            const post = yield this.postRepository.findOne({
+                where: { id },
+                relations: ["author"],
+            });
+            if (!post) {
+                throw new errors_1.NotFoundError("Post");
             }
-            catch (error) {
-                throw { status: error.status || 404, message: error.message || "Post not found" };
+            if (post.author.id !== user.id) {
+                throw new errors_1.ForbiddenError("Not authorized to update this post");
             }
+            post.title = title || post.title;
+            post.body = body || post.body;
+            return yield this.postRepository.save(post);
         });
     }
     deletePost(id, user) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const post = yield PostRepository_1.PostRepository.findById(id);
-                if (post.author.id !== user.id) {
-                    throw { status: 403, message: "Not authorized to delete this post" };
-                }
-                yield PostRepository_1.PostRepository.deletePost(id);
-                return { message: "Post deleted successfully" };
+            const post = yield this.postRepository.findOne({
+                where: { id },
+                relations: ["author"],
+            });
+            if (!post) {
+                throw new errors_1.NotFoundError("Post");
             }
-            catch (error) {
-                throw { status: error.status || 404, message: error.message || "Post not found" };
+            if (post.author.id !== user.id) {
+                throw new errors_1.ForbiddenError("Not authorized to delete this post");
             }
+            yield this.postRepository.delete(id);
+            return { message: "Post deleted successfully" };
         });
     }
 }

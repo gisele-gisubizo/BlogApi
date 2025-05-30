@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const userController_1 = require("../controllers/userController");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const authorize_1 = require("../middleware/authorize");
+const validation_1 = require("../middleware/validation");
+const user_schema_1 = require("../schemas/user.schema");
+const router = (0, express_1.Router)();
+router.get("/test", userController_1.test);
+router.get("/profile", authMiddleware_1.authMiddleware, userController_1.getProfile);
+router.get("/search", (0, validation_1.validate)(user_schema_1.searchUsersSchema), userController_1.search);
+router.get("/", authMiddleware_1.authMiddleware, (0, authorize_1.authorize)(["admin"]), userController_1.getAllUsers);
+router.get("/:id", authMiddleware_1.authMiddleware, (0, authorize_1.authorize)(["admin"]), (0, validation_1.validate)(user_schema_1.getUserByIdSchema), userController_1.getById);
+router.put("/:id", authMiddleware_1.authMiddleware, (0, authorize_1.authorize)(["admin"]), (0, validation_1.validate)(user_schema_1.updateUserSchema), userController_1.updateUser);
+router.delete("/:id", authMiddleware_1.authMiddleware, (0, authorize_1.authorize)(["admin"]), (0, validation_1.validate)(user_schema_1.deleteUserSchema), userController_1.deleteUser);
+exports.default = router;

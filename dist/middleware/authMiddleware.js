@@ -14,32 +14,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authMiddleware = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const UserRepository_1 = require("../repository/UserRepository");
+const User_1 = require("../entities/User");
+const database_1 = require("../config/database");
 const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    // Extract the token from the Authorization header, removing the "Bearer " prefix
     const token = (_a = req.header("Authorization")) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", "");
-    console.log("Authorization header:", req.header("Authorization")); // Log the header
-    console.log("Extracted token:", token); // Log the token
     if (!token) {
-        return res.status(401).json({ message: "No token provided" });
+        return res.status(401).json({ success: false, message: "You are not authorized" });
     }
     try {
         const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
-        console.log("Decoded token:", decoded); // Log the decoded payload
-        const user = yield UserRepository_1.UserRepository.findUserById(decoded.userId);
-        console.log("Found user:", user); // Log the user
+        const user = yield database_1.AppDataSource.getRepository(User_1.User).findOneBy({ id: decoded.id });
         if (!user) {
-            return res.status(401).json({ message: "User not found" });
+            return res.status(401).json({ success: false, message: "User not found" });
         }
-        // Attach the user to the request object
         req.user = user;
-        // Proceed to the next middleware or route handler
         next();
     }
-    catch (error) {
-        console.log("Token verification error:", error); // Log any verification errors
-        res.status(401).json({ message: "Unauthorized" });
+    catch (err) {
+        res.status(403).json({ success: false, message: "Token is expired or invalid" });
     }
 });
 exports.authMiddleware = authMiddleware;

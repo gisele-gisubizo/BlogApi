@@ -14,33 +14,62 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmailService = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
-class EmailService {
-    constructor() {
-        this.transporter = nodemailer_1.default.createTransport({
+function createTransporter() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return nodemailer_1.default.createTransport({
+            service: "Gmail",
             host: process.env.EMAIL_HOST,
-            port: parseInt(process.env.EMAIL_PORT || "587"),
+            port: parseInt(process.env.EMAIL_PORT || "465"),
             secure: process.env.EMAIL_SECURE === "true",
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,
             },
+            tls: {
+                rejectUnauthorized: false,
+            },
+        });
+    });
+}
+class EmailService {
+    sendVerificationEmail(email, link) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const transporter = yield createTransporter();
+            yield transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: "Verify Your Email",
+                html: `
+        <h2>Welcome!</h2>
+        <p>Click below to verify your email:</p>
+        <a href="${link}">${link}</a>
+        <p>This link expires in 24 hours.</p>
+      `,
+            });
         });
     }
-    sendResetPasswordEmail(to, token) {
+    sendResetPasswordEmail(email, resetLink) {
         return __awaiter(this, void 0, void 0, function* () {
-            const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+            const transporter = yield createTransporter();
             const mailOptions = {
-                from: process.env.EMAIL_FROM,
-                to,
-                subject: "Password Reset Request",
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: "Reset Your Password",
                 html: `
-        <h1>Reset Your Password</h1>
+        <h2>Password Reset Request</h2>
         <p>Click the link below to reset your password:</p>
         <a href="${resetLink}">${resetLink}</a>
-        <p>This link will expire in 1 hour.</p>
+        <p>If you didn't request this, you can safely ignore this email.</p>
+        <p>This link will expire in 15 minutes.</p>
       `,
             };
-            yield this.transporter.sendMail(mailOptions);
+            try {
+                yield transporter.sendMail(mailOptions);
+            }
+            catch (error) {
+                console.error("Failed to send email:", error);
+                throw new Error("Failed to send reset password email. Please try again later.");
+            }
         });
     }
 }

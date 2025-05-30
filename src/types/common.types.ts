@@ -1,6 +1,6 @@
-import { Request } from 'express';
-import { User } from '../modals/User';
 
+import { Request } from "express";
+import { User } from "../entities/User";
 
 export interface AuthenticatedRequest extends Request {
   user?: User;
@@ -12,7 +12,7 @@ export interface ValidationResult<T> {
   errors?: Record<string, string[]>;
 }
 
-export type UserRole = 'user' | 'admin';
+export type UserRole = "user" | "admin";
 
 export interface ApiResponse<T = any> {
   success: boolean;

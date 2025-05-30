@@ -8,7 +8,14 @@
     "build": "tsc",
     "watch": "tsc -w",
     "serve": "nodemon dist/app.ts",
-    "dev:nodemon": "nodemon --exec ts-node src/app.ts"
+    "dev:nodemon": "nodemon --exec ts-node src/app.ts",
+    "typeorm": "ts-node ./node_modules/typeorm/cli.js -d src/config/database.ts",
+    "migration:create": "typeorm migration:create",
+    "migration:generate": "npm run typeorm -- migration:generate",
+    "migration:run": "npm run typeorm -- migration:run",
+
+    "migration:revert": "npm run typeorm -- migration:revert"
+
   },
   "keywords": [],
   "author": "",

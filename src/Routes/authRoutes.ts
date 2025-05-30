@@ -1,62 +1,14 @@
 import { Router, Request, Response } from "express";
-import { UserService } from "../services/UserServices";
-import { authMiddleware } from "../middleware/authMiddleware";
+import { signup, verifyEmail, login, forgotPassword, resetPassword } from "../controllers/authControllers";
+import { validate } from "../middleware/validation";
+import { signupSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, verifyEmailSchema } from "../schemas/authSchema";
 
 const router = Router();
-const userService = new UserService();
 
-router.get("/test", (req: Request, res: Response) => {
-  console.log("GET /test hit");
-  res.json({ message: "Test" });
-});
-
-router.post("/register", async (req: Request, res: Response) => {
-  try {
-    const { name, email, password } = req.body;
-    const result = await userService.register(name, email, password);
-    res.status(201).json(result);
-  } catch (error: any) {
-    res.status(error.status || 500).json({ message: error.message });
-  }
-});
-
-router.post("/login", async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    const result = await userService.login(email, password);
-    res.json(result);
-  } catch (error: any) {
-    res.status(error.status || 500).json({ message: error.message });
-  }
-});
-
-router.get("/profile", authMiddleware, async (req: Request, res: Response) => {
-  try {
-    const result = await userService.getProfile(req.user!.id);
-    res.json(result);
-  } catch (error: any) {
-    res.status(error.status || 500).json({ message: error.message });
-  }
-});
-
-router.post("/forgot", async (req: Request, res: Response) => {
-  try {
-    const { email } = req.body;
-    const result = await userService.forgotPassword(email);
-    res.json(result);
-  } catch (error: any) {
-    res.status(error.status || 500).json({ message: error.message });
-  }
-});
-
-router.post("/reset", async (req: Request, res: Response) => {
-  try {
-    const { token, newPassword } = req.body;
-    const result = await userService.resetPassword(token, newPassword);
-    res.json(result);
-  } catch (error: any) {
-    res.status(error.status || 500).json({ message: error.message });
-  }
-});
+router.post("/signup", validate(signupSchema), signup);
+router.get("/verify-email/:token", validate(verifyEmailSchema), verifyEmail);
+router.post("/login", validate(loginSchema), login);
+router.post("/forgot-password", validate(forgotPasswordSchema), forgotPassword);
+router.post("/reset-password/:token", validate(resetPasswordSchema), resetPassword);
 
 export default router;

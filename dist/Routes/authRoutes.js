@@ -1,70 +1,13 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const UserServices_1 = require("../services/UserServices");
-const authMiddleware_1 = require("../middleware/authMiddleware");
+const authControllers_1 = require("../controllers/authControllers");
+const validation_1 = require("../middleware/validation");
+const authSchema_1 = require("../schemas/authSchema");
 const router = (0, express_1.Router)();
-const userService = new UserServices_1.UserService();
-router.get("/test", (req, res) => {
-    console.log("GET /test hit");
-    res.json({ message: "Test" });
-});
-router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { name, email, password } = req.body;
-        const result = yield userService.register(name, email, password);
-        res.status(201).json(result);
-    }
-    catch (error) {
-        res.status(error.status || 500).json({ message: error.message });
-    }
-}));
-router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { email, password } = req.body;
-        const result = yield userService.login(email, password);
-        res.json(result);
-    }
-    catch (error) {
-        res.status(error.status || 500).json({ message: error.message });
-    }
-}));
-router.get("/profile", authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const result = yield userService.getProfile(req.user.id);
-        res.json(result);
-    }
-    catch (error) {
-        res.status(error.status || 500).json({ message: error.message });
-    }
-}));
-router.post("/forgot", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { email } = req.body;
-        const result = yield userService.forgotPassword(email);
-        res.json(result);
-    }
-    catch (error) {
-        res.status(error.status || 500).json({ message: error.message });
-    }
-}));
-router.post("/reset", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { token, newPassword } = req.body;
-        const result = yield userService.resetPassword(token, newPassword);
-        res.json(result);
-    }
-    catch (error) {
-        res.status(error.status || 500).json({ message: error.message });
-    }
-}));
+router.post("/signup", (0, validation_1.validate)(authSchema_1.signupSchema), authControllers_1.signup);
+router.get("/verify-email/:token", (0, validation_1.validate)(authSchema_1.verifyEmailSchema), authControllers_1.verifyEmail);
+router.post("/login", (0, validation_1.validate)(authSchema_1.loginSchema), authControllers_1.login);
+router.post("/forgot-password", (0, validation_1.validate)(authSchema_1.forgotPasswordSchema), authControllers_1.forgotPassword);
+router.post("/reset-password/:token", (0, validation_1.validate)(authSchema_1.resetPasswordSchema), authControllers_1.resetPassword);
 exports.default = router;

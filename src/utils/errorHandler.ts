@@ -2,5 +2,5 @@ import { Request, Response, NextFunction } from "express";
 
 export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
-  res.status(err.status || 500).json({ message: err.message || "Algo deu errado!" });
+  res.status(err.status || 500).json({ message: err.message || "something went wrong!" });
 };

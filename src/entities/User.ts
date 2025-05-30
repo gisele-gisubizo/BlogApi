@@ -1,6 +1,4 @@
-import { generateResetToken } from './../utils/jwt';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
-
 
 @Entity("users")
 export class User {
@@ -16,16 +14,24 @@ export class User {
   @Column()
   password!: string;
 
+  @Column({ type: "varchar", length: 20, default: "user" })
+  role!: "user" | "admin";
+
+  @Column({ type: "boolean", default: false })
+  isVerified!: boolean;
+
+  @Column({ type: "boolean", default: true })
+  isActive!: boolean;
+
   @CreateDateColumn()
   createdAt!: Date;
 
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  @Column({type:'text',nullable:true})
- resetPasswordToken?:string |null;
+  @Column({ type: "text", nullable: true })
+  resetPasswordToken?: string | null;
 
-  @Column({type:'text',nullable:true})
-resetPasswordExpires?:Date |null;
-
+  @Column({ type: "timestamp", nullable: true })
+  resetPasswordExpires?: Date | null;
 }
