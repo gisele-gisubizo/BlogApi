@@ -16,7 +16,7 @@ export const validate = (schema: AnyZodObject) => {
         // Transform ZodError errors into Record<string, string[]>
         const formattedErrors: Record<string, string[]> = {};
         error.errors.forEach((err) => {
-          const path = err.path.join("."); // e.g., "body.email" or "params.id"
+          const path = err.path.join("."); 
           if (!formattedErrors[path]) {
             formattedErrors[path] = [];
           }
